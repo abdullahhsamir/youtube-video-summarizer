@@ -16,7 +16,7 @@ class YouTubeSubtitleExtractor:
         }
     
     def _setup_logger(self, level: int) -> logging.Logger:
-        logger = logging.getLogger(self.__class__.__name__)
+        logger = logging.getLogger(__name__)
         logger.setLevel(level)
         
         # Prevent duplicate handlers
