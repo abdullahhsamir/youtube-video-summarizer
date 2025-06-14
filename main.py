@@ -12,14 +12,15 @@ def main():
     args = parser.parse_args()
     
     try:
+        start_time = datetime.now()
+        
         agent = YouTubeSummarizerAgent()        
         summary = agent.summarize_video(args.link)
         
-        print("\n" + "="*80)
-        print("SUMMARY:")
-        print("="*80)
-        print(summary)
-        print("="*80)
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds() / 60
+        
+        print(f"Completed at {end_time.strftime('%Y-%m-%d %H:%M:%S')} (took {duration:.2f} minutes)")
         
         if args.save_local:
             os.makedirs('outputs', exist_ok=True)
