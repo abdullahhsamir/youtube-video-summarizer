@@ -2,7 +2,7 @@ import argparse
 import os
 from datetime import datetime
 from src.agents import YouTubeSummarizerAgent
-
+from src.utils.utils import save_summary_to_file
 
 def main():
     parser = argparse.ArgumentParser(description='YouTube Video Summarizer')
@@ -23,13 +23,7 @@ def main():
         print(f"Completed at {end_time.strftime('%Y-%m-%d %H:%M:%S')} (took {duration:.2f} minutes)")
         
         if args.save_local:
-            os.makedirs('outputs', exist_ok=True)
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"outputs/summary_{timestamp}.txt"
-            
-            with open(filename, 'w', encoding='utf-8') as f:
-                f.write(summary)
-            
+            filename = save_summary_to_file(summary)
             print(f"\nSummary saved to: {filename}")
         
     except Exception as e:
