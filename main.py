@@ -37,4 +37,9 @@ def main():
 
 
 if __name__ == "__main__":
+
+    """
+    EXAMPLE USAGE:
+    python main.py -l "https://www.youtube.com/watch?v=example_video_id" --save_local
+    """
     main()

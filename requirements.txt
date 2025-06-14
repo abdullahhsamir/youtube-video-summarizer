@@ -3,3 +3,5 @@ yt-dlp==2025.6.9
 langchain-google-genai==2.1.5
 langchain-community==0.3.25
 langgraph==0.4.8
+fastapi==0.115.12
+uvicorn==0.34.3
