@@ -193,4 +193,7 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+outputs/
+**/outputs/
+.txt
 .__pycache__

@@ -33,3 +33,27 @@ A Python application that extracts subtitles from YouTube videos and generates c
 2. Click "Create API Key"
 3. Copy the generated API key and add it to your `.env` file
 
+## Usage
+
+### Basic Usage
+Summarize a YouTube video and display the result in the terminal:
+```bash
+python main.py -l "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+```
+
+### Save Summary Locally
+Summarize a video and save the result to the `outputs` directory:
+```bash
+python main.py -l "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --save_local
+```
+
+### Command Line Arguments
+- `-l, --link` (required): YouTube video URL to summarize
+- `--save_local` (optional): Save summary to local outputs directory with timestamp
+
+## Output Format
+
+When using the `--save_local` flag, summaries are saved to:
+- **Directory**: `outputs/`
+- **Filename format**: `summary_YYYYMMDD_HHMMSS.txt`
+- **Encoding**: UTF-8
