@@ -1,35 +1,39 @@
+import argparse
+import os
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, Path
-from fastapi.responses import JSONResponse
 from src.agents import YouTubeSummarizerAgent
-from src.utils import validate_youtube_url
+from src.utils.utils import save_summary_to_file
 
-app = FastAPI(title="YouTube Video Summarizer")
-
-@app.get("/")
-async def root():
-    return {"message": "Working!.."}
-
-@app.get("/summarize")
-async def summarize_youtube_video(url: str):
+def main():
+    parser = argparse.ArgumentParser(description='YouTube Video Summarizer')
+    parser.add_argument('-l', '--link', required=True, help='YouTube video URL to summarize')
+    parser.add_argument('--save_local', action='store_true', help='Save summary to local outputs directory')
+    
+    args = parser.parse_args()
+    
     try:
-        if not validate_youtube_url(url):
-            raise HTTPException(status_code=400, detail="Invalid YouTube URL")
+        start_time = datetime.now()
         
         agent = YouTubeSummarizerAgent()        
-        summary_text = agent.summarize_video(url)
-        timestamp = datetime.now().isoformat()
+        summary = agent.summarize_video(args.link)
         
-        return JSONResponse(content={
-            "status": "success",
-            "url": url,
-            "summary": summary_text,
-            "timestamp": timestamp
-        })
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds() / 60
+        
+        print(f"Completed at {end_time.strftime('%Y-%m-%d %H:%M:%S')} (took {duration:.2f} minutes)")
+        
+        if args.save_local:
+            filename = save_summary_to_file(summary)
+            print(f"\nSummary saved to: {filename}")
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing video: {str(e)}")
+        raise
+
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    """
+    EXAMPLE USAGE:
+    python app.py -l "https://www.youtube.com/watch?v=5eAS2xEn_D8" --save_local
+    """
+    main()
