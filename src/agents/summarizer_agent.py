@@ -101,6 +101,7 @@ class YouTubeSummarizerAgent:
         - Maintain the original tone and context
         - Structure the content in a readable format
         - Don't summarize it too much, make it as an article!
+        - Make your summary as long as the original language, if language is English you must write in English, if language is Arabic you must write in Arabic, etc.
         
         Transcript:
         {subtitle}
