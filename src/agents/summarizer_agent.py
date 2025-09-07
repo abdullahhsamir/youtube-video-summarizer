@@ -29,65 +29,79 @@ class SummarizerConfig:
 class AgentGraphState(TypedDict):
     start_link: str
     summarized_text: str
+    enable_time_range: bool
+    start_time: int
+    end_time: int
 
 
-class YouTubeSummarizerAgent:    
+class YouTubeSummarizerAgent:
     def __init__(self, config: Optional[SummarizerConfig] = None):
         self.config = config or SummarizerConfig()
         self._initialize_llm()
         self.graph = self._build_graph()
-    
+
     def _initialize_llm(self) -> None:
-        load_dotenv('.env')
-        
-        api_key = os.getenv('GOOGLE_API_KEY')
+        load_dotenv(".env")
+
+        api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
             raise ValueError("GOOGLE_API_KEY environment variable is required")
-        
+
         self.llm = ChatGoogleGenerativeAI(
             model=self.config.model_name,
             temperature=self.config.temperature,
             max_tokens=self.config.max_tokens,
             timeout=self.config.timeout,
             max_retries=self.config.max_retries,
-            google_api_key=api_key
+            google_api_key=api_key,
         )
         logger.info(f"LLM initialized with model: {self.config.model_name}")
-    
+
     def _summarize_node(self, state: AgentGraphState) -> Dict[str, Any]:
-        if 'start_link' not in state or not state['start_link']:
-            raise ValueError("State must contain a valid 'start_link' with the YouTube video URL")
-        
+        if "start_link" not in state or not state["start_link"]:
+            raise ValueError(
+                "State must contain a valid 'start_link' with the YouTube video URL"
+            )
+
         try:
             logger.info("Starting extraction and summarization process")
 
-            start_link = state['start_link']
+            start_link = state["start_link"]
+            enable_time_range = state.get("enable_time_range", False)
+            start_time = state.get("start_time", 0)
+            end_time = state.get("end_time", 0)
+
             logger.info(f"Processing video: {start_link}")
-            
-            subtitle = get_clean_subtitles(start_link)
+
+            subtitle = get_clean_subtitles(
+                start_link,
+                enable_time_range=enable_time_range,
+                start_time=start_time,
+                end_time=end_time,
+            )
             if not subtitle:
                 raise ValueError("Failed to extract subtitles from the video")
-            
+
             logger.info("Subtitles extracted successfully")
-            
+
             summarize_prompt = self._create_summarization_prompt(subtitle)
             logger.info("Sending subtitles to LLM for summarization")
-            
+
             response = self.llm.invoke(summarize_prompt)
             summarized_text = response.content
-            
+
             if not summarized_text:
                 raise ValueError("LLM returned empty summary")
-            
+
             logger.info("Summarization completed successfully")
-            
-            state['summarized_text'] = summarized_text
+
+            state["summarized_text"] = summarized_text
             return state
-            
+
         except Exception as e:
             logger.error(f"Error during summarization: {str(e)}")
             raise
-    
+
     def _create_summarization_prompt(self, subtitle: str) -> str:
         return f"""
         Summarize the following YouTube video transcript into a well-structured article.
@@ -106,50 +120,58 @@ class YouTubeSummarizerAgent:
         Transcript:
         {subtitle}
         """
-    
+
     def _build_graph(self) -> StateGraph:
         graph = StateGraph(AgentGraphState)
-        graph.add_node('summarize', self._summarize_node)
-        graph.add_edge(START, 'summarize')
-        graph.add_edge('summarize', END)
-        
+        graph.add_node("summarize", self._summarize_node)
+        graph.add_edge(START, "summarize")
+        graph.add_edge("summarize", END)
+
         compiled_graph = graph.compile()
         logger.info("Summarization graph compiled successfully")
-        
+
         return compiled_graph
-    
-    def summarize_video(self, video_url: str) -> str:
+
+    def summarize_video(self, video_url: str, enable_time_range: bool = False, start_time:int =0, end_time:int = 0) -> str:
         if not video_url or not isinstance(video_url, str):
             raise ValueError("A valid YouTube video URL is required")
-        
+
         try:
-            state = {'start_link': video_url}
+            if enable_time_range:
+                state = {
+                    "start_link": video_url,
+                    "enable_time_range": enable_time_range,
+                    "start_time": start_time,
+                    "end_time": end_time
+                }
+                result = self.graph.invoke(state)
+                return result["summarized_text"]
+            state = {"start_link": video_url}
             result = self.graph.invoke(state)
-            return result['summarized_text']
-            
+            return result["summarized_text"]
+
         except Exception as e:
             logger.error(f"Failed to summarize video {video_url}: {str(e)}")
             raise
-
 
 
 # if __name__ == "__main__":
 #     try:
 #         agent = YouTubeSummarizerAgent()
 #         logger.info("YouTube Summarizer Agent initialized successfully")
-        
+
 #         test_video_url = "https://www.youtube.com/watch?v=5eAS2xEn_D8"
-        
+
 #         logger.info(f"Processing video: {test_video_url}")
 #         summary = agent.summarize_video(test_video_url)
-        
+
 #         logger.info("Summarization completed successfully")
 #         print("\n" + "="*80)
 #         print("SUMMARY:")
 #         print("="*80)
 #         print(summary)
 #         print("="*80)
-        
+
 #     except Exception as e:
 #         logger.error(f"Application error: {str(e)}")
 #         raise
