@@ -90,8 +90,16 @@ Summarize a video and save it directly to your Notion workspace:
 python app.py -l "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --save_notion
 ```
 
+#### Time Range Extraction
+Summarize only a specific time range of a video:
+```bash
+python app.py -l "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -t "30-120" --save_local
+python app.py -l "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -t "1:30-3:45" --save_notion
+```
+
 #### Command Line Arguments
 - `-l, --link` (required): YouTube video URL to summarize
+- `-t, --time` (optional): Time range to extract (e.g., '30-90', '1:30-3:45', '0:00:30-0:01:30')
 - `--save_local` (optional): Save summary to local outputs directory with timestamp
 - `--save_notion` (optional): Save summary to Notion (requires Notion setup)
 
